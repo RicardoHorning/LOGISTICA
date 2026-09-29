@@ -1,0 +1,1286 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Desafio Galpão Ágil - Fases 1 & 2</title>
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts: Fredoka & Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        display: ['Fredoka', 'sans-serif'],
+                    },
+                    colors: {
+                        agile: {
+                            blue: '#0284c7',
+                            green: '#10b981',
+                            amber: '#f59e0b',
+                            red: '#ef4444',
+                            purple: '#8b5cf6',
+                            dark: '#0f172a',
+                            card: '#1e293b'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0f172a;
+            color: #f8fafc;
+        }
+
+        .font-display {
+            font-family: 'Fredoka', sans-serif;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #1e293b;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 4px;
+        }
+
+        /* Animations */
+        @keyframes bounce-subtle {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+        .animate-bounce-subtle {
+            animation: bounce-subtle 2s infinite;
+        }
+
+        @keyframes pulse-border {
+            0%, 100% { border-color: rgba(245, 158, 11, 0.4); }
+            50% { border-color: rgba(245, 158, 11, 0.9); }
+        }
+        .pulse-amber-border {
+            animation: pulse-border 1.5s infinite;
+        }
+
+        .kanban-card {
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: grab;
+        }
+        .kanban-card:active {
+            cursor: grabbing;
+        }
+        .kanban-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px -4px rgba(2, 132, 199, 0.3);
+        }
+
+        .drop-zone-highlight {
+            border-color: #38bdf8 !important;
+            background-color: rgba(56, 189, 248, 0.08) !important;
+        }
+
+        /* Certificate Print Styling */
+        @media print {
+            body {
+                background-color: #ffffff !important;
+                color: #000000 !important;
+            }
+            .no-print {
+                display: none !important;
+            }
+            .print-only {
+                display: block !important;
+            }
+            .cert-container {
+                border: 4px double #0f172a !important;
+                background: #ffffff !important;
+                color: #000000 !important;
+                box-shadow: none !important;
+            }
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between selection:bg-sky-500 selection:text-white">
+
+    <!-- Top Navigation / Progress Header -->
+    <header class="bg-slate-900/90 backdrop-blur-md border-b border-slate-800 sticky top-0 z-40 no-print">
+        <div class="max-w-6xl mx-auto px-4 py-3 flex flex-wrap justify-between items-center gap-3">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-sky-500 via-emerald-400 to-amber-400 flex items-center justify-center text-slate-950 font-black text-xl shadow-lg shadow-sky-500/20">
+                    <i class="fa-solid fa-boxes-packing"></i>
+                </div>
+                <div>
+                    <h1 class="font-display font-bold text-lg md:text-xl text-white tracking-wide">
+                        Desafio Galpão Ágil <span class="text-xs bg-sky-500/20 text-sky-300 border border-sky-500/30 px-2 py-0.5 rounded-full ml-1">v2.0</span>
+                    </h1>
+                    <span class="text-xs text-slate-400 font-medium">Logística Descomplicada • Fases 1 & 2</span>
+                </div>
+            </div>
+
+            <!-- Student Tag & Step Tracker -->
+            <div class="flex items-center space-x-2 sm:space-x-4">
+                <div id="student-badge" class="hidden bg-slate-800 border border-slate-700 px-3 py-1.5 rounded-full text-xs font-semibold text-sky-400 flex items-center space-x-2">
+                    <i class="fa-solid fa-user-gear"></i>
+                    <span id="badge-name">Aluno</span>
+                </div>
+
+                <!-- Step Tracker Indicators -->
+                <div class="flex items-center space-x-1.5 text-xs font-bold">
+                    <span id="step-dot-1" class="w-7 h-7 rounded-full bg-sky-500 text-white flex items-center justify-center shadow-md">1</span>
+                    <span class="text-slate-600">--</span>
+                    <span id="step-dot-2" class="w-7 h-7 rounded-full bg-slate-800 text-slate-500 flex items-center justify-center border border-slate-700">2</span>
+                    <span class="text-slate-600">--</span>
+                    <span id="step-dot-3" class="w-7 h-7 rounded-full bg-slate-800 text-slate-500 flex items-center justify-center border border-slate-700">3</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <main class="max-w-5xl mx-auto px-4 py-6 flex-grow w-full">
+
+        <!-- SCREEN 0: WELCOME & REGISTRATION -->
+        <section id="screen-welcome" class="space-y-6">
+            <div class="bg-gradient-to-br from-slate-900 via-slate-900 to-sky-950/60 border border-slate-800 rounded-3xl p-6 md:p-10 shadow-2xl relative overflow-hidden">
+                <div class="absolute -right-12 -top-12 opacity-10 text-sky-400 pointer-events-none">
+                    <i class="fa-solid fa-truck-fast text-[240px]"></i>
+                </div>
+
+                <div class="max-w-2xl space-y-6 relative z-10">
+                    <div class="inline-flex items-center space-x-2 bg-sky-500/10 border border-sky-500/30 px-3 py-1 rounded-full text-xs font-bold text-sky-300">
+                        <i class="fa-solid fa-sparkles"></i>
+                        <span>Atividade Prática Completa (2 Fases)</span>
+                    </div>
+
+                    <h2 class="font-display text-3xl md:text-5xl font-extrabold text-white leading-tight">
+                        Aprenda a Dominar a <span class="bg-gradient-to-r from-sky-400 via-emerald-400 to-amber-300 bg-clip-text text-transparent">Logística Ágil!</span>
+                    </h2>
+
+                    <p class="text-slate-300 text-sm md:text-base leading-relaxed">
+                        Bem-vindo ao simulador visual do chão de fábrica! Você aprenderá como o trabalho em equipe, a organização em quadros visuais e a priorização correta salvam o dia no centro de distribuição.
+                    </p>
+
+                    <!-- Phases Breakdown Cards -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                        <div class="bg-slate-950/80 p-4 rounded-2xl border border-sky-500/30 space-y-1">
+                            <span class="text-xs font-bold text-sky-400 uppercase tracking-wider block">Fase 1: Fundamentos</span>
+                            <h3 class="text-sm font-bold text-white">Mentalidade Ágil & Limite de WIP</h3>
+                            <p class="text-[12px] text-slate-400">Aprenda a não entulhar o galpão e evite o caos usando o quadro Kanban.</p>
+                        </div>
+                        <div class="bg-slate-950/80 p-4 rounded-2xl border border-purple-500/30 space-y-1">
+                            <span class="text-xs font-bold text-purple-400 uppercase tracking-wider block">Fase 2: Aprofundamento</span>
+                            <h3 class="text-sm font-bold text-white">Priorização & Reunião Diária (Daily)</h3>
+                            <p class="text-[12px] text-slate-400">Separe lotes urgentes e remova gargalos para destravar pedidos empacados!</p>
+                        </div>
+                    </div>
+
+                    <!-- Student Name Input Form -->
+                    <div class="bg-slate-950/90 p-5 rounded-2xl border border-slate-800 space-y-3">
+                        <label for="student-name-input" class="block text-xs font-bold uppercase tracking-wider text-slate-300">
+                            <i class="fa-solid fa-id-card text-sky-400 mr-1"></i> Digite seu Nome (ou Nome da Dupla/Grupo):
+                        </label>
+                        <div class="flex flex-col sm:flex-row gap-3">
+                            <input type="text" id="student-name-input" placeholder="Ex: Lucas Silva ou Grupo Ômega" 
+                                class="flex-grow bg-slate-900 border border-slate-700 focus:border-sky-500 text-white placeholder-slate-500 text-sm rounded-xl px-4 py-3 outline-none transition">
+                            <button onclick="startApp()" class="bg-gradient-to-r from-sky-500 to-emerald-500 hover:from-sky-600 hover:to-emerald-600 text-white font-display font-bold px-8 py-3 rounded-xl shadow-lg shadow-sky-500/25 transition transform hover:-translate-y-0.5 flex items-center justify-center space-x-2 shrink-0">
+                                <span>Iniciar Fase 1</span>
+                                <i class="fa-solid fa-play"></i>
+                            </button>
+                        </div>
+                        <p id="name-error" class="text-xs text-rose-400 hidden"><i class="fa-solid fa-circle-exclamation mr-1"></i> Por favor, informe seu nome para poder gerar o certificado no final!</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SCREEN 1: FASE 1 - FUNDAMENTOS (MENTALIDADE & KANBAN) -->
+        <section id="screen-step1" class="hidden space-y-6">
+            
+            <!-- PART 1: SCENARIOS -->
+            <div id="phase1-part1" class="bg-slate-900 border border-slate-800 rounded-3xl p-6 md:p-8 space-y-6 shadow-xl">
+                <div class="flex flex-wrap justify-between items-center gap-3 border-b border-slate-800 pb-4">
+                    <div>
+                        <span class="px-3 py-1 bg-sky-500/20 text-sky-300 border border-sky-500/30 rounded-full text-xs font-bold uppercase tracking-wider">
+                            Fase 1 • Parte 1 de 2
+                        </span>
+                        <h2 class="font-display text-2xl font-bold text-white mt-2">
+                            Desafio da Mentalidade Ágil
+                        </h2>
+                        <p class="text-xs text-slate-400">Qual a melhor atitude diante dos problemas reais da logística?</p>
+                    </div>
+
+                    <div class="bg-slate-950 px-4 py-2 rounded-xl border border-slate-800 flex items-center space-x-2">
+                        <span class="text-xs text-slate-400">História:</span>
+                        <span id="story-progress" class="font-display text-sm font-bold text-sky-400">1 de 3</span>
+                    </div>
+                </div>
+
+                <!-- Story Card Container -->
+                <div id="story-card" class="space-y-6">
+                    <div class="bg-slate-950 p-5 rounded-2xl border border-slate-800 space-y-2">
+                        <div id="story-category" class="text-xs font-bold text-amber-400 uppercase tracking-wider flex items-center space-x-1.5">
+                            <i class="fa-solid fa-truck-ramp-box"></i>
+                            <span>Imprevisto na Rota</span>
+                        </div>
+                        <h3 id="story-title" class="font-display text-xl font-bold text-white"></h3>
+                        <p id="story-text" class="text-sm text-slate-300 leading-relaxed"></p>
+                    </div>
+
+                    <div class="space-y-3">
+                        <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block">Escolha sua ação:</span>
+                        <div id="story-options" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+                    </div>
+
+                    <!-- Instant Feedback Box -->
+                    <div id="story-feedback" class="hidden p-5 rounded-2xl border space-y-3 transition-all">
+                        <div class="flex items-center justify-between">
+                            <span id="feedback-badge" class="px-3 py-1 rounded-full text-xs font-bold uppercase"></span>
+                        </div>
+                        <p id="feedback-text" class="text-sm text-slate-200 font-medium leading-relaxed"></p>
+                        <div class="pt-2 flex justify-end">
+                            <button id="next-story-btn" onclick="nextStory()" class="px-6 py-2.5 bg-sky-600 hover:bg-sky-500 text-white font-display font-bold text-sm rounded-xl transition flex items-center space-x-2 shadow-lg shadow-sky-600/30">
+                                <span>Avançar</span>
+                                <i class="fa-solid fa-arrow-right"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PART 2: KANBAN BOARD WITH WIP -->
+            <div id="phase1-part2" class="hidden space-y-6">
+                <div class="bg-slate-900 border border-slate-800 rounded-3xl p-5 space-y-4 shadow-xl">
+                    <div class="flex flex-wrap justify-between items-center gap-3 border-b border-slate-800 pb-3">
+                        <div>
+                            <span class="px-3 py-1 bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 rounded-full text-xs font-bold uppercase tracking-wider">
+                                Fase 1 • Parte 2 de 2
+                            </span>
+                            <h2 class="font-display text-2xl font-bold text-white mt-1">
+                                Prática no Galpão (Quadro Kanban)
+                            </h2>
+                            <p class="text-xs text-slate-400">Puxe os pedidos até "Entregue". Cuidado para não ultrapassar o limite da bancada!</p>
+                        </div>
+
+                        <div class="bg-slate-950 px-4 py-2 rounded-xl border border-slate-800 flex items-center space-x-2">
+                            <i class="fa-solid fa-circle-check text-emerald-400"></i>
+                            <span class="text-xs text-slate-400">Entregues:</span>
+                            <span id="delivered-count" class="font-display text-base font-bold text-emerald-400">0 / 6</span>
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-950/80 border border-amber-500/30 p-3.5 rounded-2xl flex items-start space-x-3 text-xs text-slate-300">
+                        <div class="w-8 h-8 rounded-lg bg-amber-500/20 text-amber-400 flex items-center justify-center font-bold shrink-0 mt-0.5">
+                            <i class="fa-solid fa-hand"></i>
+                        </div>
+                        <div>
+                            <strong class="text-amber-300 font-bold block">REGRA DE OURO DO GALPÃO (Limite de WIP = 2):</strong>
+                            A bancada <strong>"Em Separação"</strong> suporta no máximo <strong>2 CAIXAS SIMULTÂNEAS</strong>. Tentar puxar a 3ª caixa sem finalizar as anteriores entulha o galpão!
+                        </div>
+                    </div>
+                </div>
+
+                <!-- KANBAN BOARD GRID -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 flex flex-col min-h-[400px]">
+                        <div class="flex items-center justify-between border-b border-slate-800 pb-3 mb-3">
+                            <div class="flex items-center space-x-2">
+                                <span class="text-lg">📥</span>
+                                <h3 class="font-display font-bold text-white text-base">1. A Fazer</h3>
+                            </div>
+                            <span id="count-todo" class="text-xs bg-slate-800 text-slate-300 px-2.5 py-1 rounded-full font-bold border border-slate-700">6</span>
+                        </div>
+                        <div id="col-todo" class="flex-grow space-y-3 p-1 rounded-xl transition" ondragover="allowDrop(event)" ondrop="drop(event, 'todo')"></div>
+                    </div>
+
+                    <div id="col-container-wip" class="bg-slate-900 border-2 border-amber-500/40 rounded-2xl p-4 flex flex-col min-h-[400px] transition-all">
+                        <div class="flex items-center justify-between border-b border-slate-800 pb-3 mb-3">
+                            <div class="flex items-center space-x-2">
+                                <span class="text-lg">📦</span>
+                                <h3 class="font-display font-bold text-white text-base">2. Em Separação</h3>
+                            </div>
+                            <div class="text-xs bg-amber-500/10 text-amber-300 border border-amber-500/30 px-2.5 py-1 rounded-full font-bold">
+                                Máx: <span id="wip-current-count">0</span> / 2
+                            </div>
+                        </div>
+                        <div id="col-doing" class="flex-grow space-y-3 p-1 rounded-xl transition" ondragover="allowDrop(event)" ondrop="drop(event, 'doing')"></div>
+                    </div>
+
+                    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 flex flex-col min-h-[400px]">
+                        <div class="flex items-center justify-between border-b border-slate-800 pb-3 mb-3">
+                            <div class="flex items-center space-x-2">
+                                <span class="text-lg">🚚</span>
+                                <h3 class="font-display font-bold text-white text-base">3. Entregue</h3>
+                            </div>
+                            <span id="count-done" class="text-xs bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-2.5 py-1 rounded-full font-bold">0</span>
+                        </div>
+                        <div id="col-done" class="flex-grow space-y-3 p-1 rounded-xl transition" ondragover="allowDrop(event)" ondrop="drop(event, 'done')"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SCREEN 2: FASE 2 - PRIORIZAÇÃO, LOTES PEQUENOS E DESTRAVANDO A OPERAÇÃO -->
+        <section id="screen-step2" class="hidden space-y-6">
+            
+            <!-- PART 1: PRIORITIZATION & SMALL BATCHES -->
+            <div id="phase2-part1" class="bg-slate-900 border border-slate-800 rounded-3xl p-6 md:p-8 space-y-6 shadow-xl">
+                <div class="flex flex-wrap justify-between items-center gap-3 border-b border-slate-800 pb-4">
+                    <div>
+                        <span class="px-3 py-1 bg-purple-500/20 text-purple-300 border border-purple-500/30 rounded-full text-xs font-bold uppercase tracking-wider">
+                            Fase 2 • Parte 1 de 2
+                        </span>
+                        <h2 class="font-display text-2xl font-bold text-white mt-1">
+                            Priorização e Lotes Pequenos
+                        </h2>
+                        <p class="text-xs text-slate-400">Nem toda carga tem a mesma urgência! Separe o Lote 1 (Urgente) para envio imediato.</p>
+                    </div>
+                    <div class="bg-slate-950 px-3.5 py-1.5 rounded-xl border border-slate-800 text-xs font-bold text-purple-400">
+                        <i class="fa-solid fa-boxes-stacked mr-1"></i> Desafio de Embarque
+                    </div>
+                </div>
+
+                <div class="bg-slate-950/80 p-4 rounded-2xl border border-slate-800 text-xs text-slate-300 space-y-2">
+                    <strong class="text-purple-300 block text-sm font-bold"><i class="fa-solid fa-lightbulb text-amber-400 mr-1"></i> CONCEITO ÁGIL: Lotes Pequenos e Valor do Cliente</strong>
+                    <p class="leading-relaxed">
+                        Na logística tradicional, acumula-se um caminhão enorme antes de enviar. Na <strong>Logística Ágil</strong>, fazemos envios em <strong>lotes pequenos e frequentes</strong>, priorizando o que é vital ou perecível para o cliente!
+                    </p>
+                </div>
+
+                <!-- Unassigned Cargo Boxes Container -->
+                <div class="space-y-3">
+                    <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block">Cargas Que Chegaram no Galpão (Clique ou arraste para organizar nos Lotes):</span>
+                    <div id="unassigned-cargo" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
+                        <!-- Cargo Items render via JS -->
+                    </div>
+                </div>
+
+                <!-- BATCHES SLOTS -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
+                    
+                    <!-- LOTE 1 (URGENTE / EMBARQUE IMEDIATO - MÁX 2) -->
+                    <div class="bg-slate-950 border-2 border-purple-500/50 rounded-2xl p-4 space-y-3">
+                        <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+                            <span class="font-display font-bold text-purple-300 text-sm flex items-center space-x-2">
+                                <i class="fa-solid fa-bolt text-amber-400"></i>
+                                <span>LOTE ÁGIL 1 (Embarque Imediato - Urgente)</span>
+                            </span>
+                            <span id="batch1-count" class="text-xs font-bold text-slate-400">0 / 2</span>
+                        </div>
+                        <div id="batch-1-slot" class="min-h-[120px] space-y-2 p-2 rounded-xl border border-dashed border-purple-500/30 flex flex-col justify-center" ondragover="allowDrop(event)" ondrop="dropCargo(event, 'batch1')">
+                            <!-- Injected by JS -->
+                        </div>
+                    </div>
+
+                    <!-- LOTE 2 (PRÓXIMO EMBARQUE - MÁX 2) -->
+                    <div class="bg-slate-950 border border-slate-800 rounded-2xl p-4 space-y-3">
+                        <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+                            <span class="font-display font-bold text-slate-300 text-sm flex items-center space-x-2">
+                                <i class="fa-solid fa-truck-ramp-box text-sky-400"></i>
+                                <span>LOTE 2 (Próximo Embarque - Regular)</span>
+                            </span>
+                            <span id="batch2-count" class="text-xs font-bold text-slate-400">0 / 2</span>
+                        </div>
+                        <div id="batch-2-slot" class="min-h-[120px] space-y-2 p-2 rounded-xl border border-dashed border-slate-700 flex flex-col justify-center" ondragover="allowDrop(event)" ondrop="dropCargo(event, 'batch2')">
+                            <!-- Injected by JS -->
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Prioritization Check Button & Feedback -->
+                <div class="pt-2 text-center space-y-3">
+                    <button onclick="validateBatchPrioritization()" class="px-8 py-3 bg-gradient-to-r from-purple-600 to-sky-600 hover:from-purple-500 hover:to-sky-500 text-white font-display font-bold text-sm rounded-xl shadow-lg transition transform hover:-translate-y-0.5">
+                        <i class="fa-solid fa-shield-halved mr-1"></i> Validar Priorização do Embarque
+                    </button>
+                    <div id="batch-feedback" class="hidden p-4 rounded-2xl border text-xs text-left font-medium leading-relaxed"></div>
+                </div>
+            </div>
+
+            <!-- PART 2: UNBLOCKING OPERATIONS (DAILY STANDUP) -->
+            <div id="phase2-part2" class="hidden space-y-6">
+                <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 md:p-8 space-y-6 shadow-xl">
+                    <div class="flex flex-wrap justify-between items-center gap-3 border-b border-slate-800 pb-4">
+                        <div>
+                            <span class="px-3 py-1 bg-amber-500/20 text-amber-300 border border-amber-500/30 rounded-full text-xs font-bold uppercase tracking-wider">
+                                Fase 2 • Parte 2 de 2
+                            </span>
+                            <h2 class="font-display text-2xl font-bold text-white mt-1">
+                                Reunião Diária (Daily) & Destravando Pedidos
+                            </h2>
+                            <p class="text-xs text-slate-400">Na reunião diária de 5 minutos, a equipe identifica o que está travado e resolve de vez!</p>
+                        </div>
+                        <div class="bg-slate-950 px-3.5 py-1.5 rounded-xl border border-slate-800 text-xs font-bold text-amber-400">
+                            <i class="fa-solid fa-lock-open mr-1"></i> Remova 3 Bloqueios
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-950/80 p-4 rounded-2xl border border-amber-500/30 flex items-start space-x-3 text-xs text-slate-300">
+                        <div class="w-8 h-8 rounded-lg bg-amber-500/20 text-amber-400 flex items-center justify-center font-bold shrink-0 mt-0.5">
+                            <i class="fa-solid fa-users-viewfinder"></i>
+                        </div>
+                        <div>
+                            <strong class="text-amber-300 font-bold block text-sm">O QUE É A REUNIÃO DIÁRIA (DAILY)?</strong>
+                            É um encontro diário em pé de apenas 5 a 10 minutos onde o time faz 3 perguntas: 
+                            <em>1. O que fiz ontem? 2. O que farei hoje? 3. Existe algo TRAVANDO meu trabalho?</em>
+                        </div>
+                    </div>
+
+                    <!-- Blocked Items Container -->
+                    <div class="space-y-4">
+                        <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block">Pedidos Travados no Galpão (Clique em cada um para resolver na Reunião Diária):</span>
+                        
+                        <div id="blocked-items-list" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <!-- Injected by JS -->
+                        </div>
+                    </div>
+
+                    <!-- Phase 2 Complete Banner -->
+                    <div id="phase2-finish-box" class="hidden bg-purple-950/40 border border-purple-500/50 p-6 rounded-3xl text-center space-y-3 animate-bounce-subtle mt-6">
+                        <div class="w-12 h-12 bg-purple-500 text-white text-2xl rounded-full flex items-center justify-center mx-auto shadow-lg shadow-purple-500/30">
+                            <i class="fa-solid fa-award"></i>
+                        </div>
+                        <h3 class="font-display text-2xl font-bold text-white">Excelente! Você concluiu a Fase 1 e a Fase 2!</h3>
+                        <p class="text-xs text-slate-300 max-w-lg mx-auto">Você aprendeu a evitar o excesso de trabalho (WIP), priorizar cargas valiosas e eliminar travamentos com reuniões rápidas.</p>
+                        <button onclick="goToStep3()" class="px-8 py-3 bg-gradient-to-r from-amber-400 via-emerald-400 to-sky-400 hover:opacity-90 text-slate-950 font-display font-black text-sm rounded-xl shadow-lg transition">
+                            Gerar Meu Certificado de Mestre Ágil <i class="fa-solid fa-arrow-right ml-1"></i>
+                        </button>
+                    </div>
+
+                </div>
+            </div>
+
+        </section>
+
+        <!-- SCREEN 3: PAINEL FINAL, CERTIFICADO DE MESTRE & DEBATE EM AULA -->
+        <section id="screen-step3" class="hidden space-y-8">
+            
+            <!-- CERTIFICATE CARD -->
+            <div class="cert-container bg-gradient-to-b from-slate-900 via-slate-900 to-slate-950 border-4 border-amber-400/80 rounded-3xl p-6 md:p-10 shadow-2xl relative overflow-hidden text-center space-y-6">
+                
+                <div class="flex justify-between items-center border-b border-slate-800 pb-4">
+                    <div class="flex items-center space-x-2 text-amber-400 font-display font-bold text-sm">
+                        <i class="fa-solid fa-medal text-2xl"></i>
+                        <span>LOGÍSTICA ÁGIL EDUCAÇÃO</span>
+                    </div>
+                    <span class="text-xs text-slate-400 font-mono" id="cert-date">Data: 2026</span>
+                </div>
+
+                <div class="space-y-3">
+                    <span class="text-xs font-bold text-emerald-400 uppercase tracking-widest block">Certificado de Excelência Prática</span>
+                    <h2 class="font-display text-3xl md:text-5xl font-black text-white">
+                        MESTRE EM LOGÍSTICA ÁGIL
+                    </h2>
+                    <p class="text-xs md:text-sm text-slate-400 max-w-xl mx-auto">
+                        Certificamos com louvor que o(a) aluno(a) / equipe concluiu todas as etapas simuladas de gestão visual, controle de gargalos, priorização por valor e comunicação diária.
+                    </p>
+                </div>
+
+                <!-- Student Name Badge -->
+                <div class="bg-slate-950/90 py-4 px-6 rounded-2xl border border-amber-400/40 inline-block my-2 max-w-md w-full shadow-inner">
+                    <span class="text-xs text-slate-400 block mb-1">Concedido com orgulho a:</span>
+                    <h3 id="cert-student-name" class="font-display text-2xl md:text-3xl font-extrabold text-amber-300 tracking-wide">
+                        Nome do Aluno
+                    </h3>
+                </div>
+
+                <!-- 4 Pillars Review Grid -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 text-left pt-4 border-t border-slate-800">
+                    <div class="bg-slate-900/80 p-3.5 rounded-xl border border-slate-800 space-y-1">
+                        <div class="text-emerald-400 text-sm font-bold flex items-center space-x-1.5">
+                            <i class="fa-solid fa-rotate"></i>
+                            <span>1. Adaptabilidade</span>
+                        </div>
+                        <p class="text-[11px] text-slate-400">Ajustar rotas rapidamente vale mais do que seguir cegamente planos defasados.</p>
+                    </div>
+
+                    <div class="bg-slate-900/80 p-3.5 rounded-xl border border-slate-800 space-y-1">
+                        <div class="text-amber-400 text-sm font-bold flex items-center space-x-1.5">
+                            <i class="fa-solid fa-hand"></i>
+                            <span>2. Limite de WIP</span>
+                        </div>
+                        <p class="text-[11px] text-slate-400">Controlar o número de caixas na bancada evita o entulho e acelera a entrega real.</p>
+                    </div>
+
+                    <div class="bg-slate-900/80 p-3.5 rounded-xl border border-slate-800 space-y-1">
+                        <div class="text-purple-400 text-sm font-bold flex items-center space-x-1.5">
+                            <i class="fa-solid fa-bolt"></i>
+                            <span>3. Priorização</span>
+                        </div>
+                        <p class="text-[11px] text-slate-400">Cargas urgentes e lotes pequenos garantem a satisfação do cliente com menos desperdício.</p>
+                    </div>
+
+                    <div class="bg-slate-900/80 p-3.5 rounded-xl border border-slate-800 space-y-1">
+                        <div class="text-sky-400 text-sm font-bold flex items-center space-x-1.5">
+                            <i class="fa-solid fa-comments"></i>
+                            <span>4. Reunião Daily</span>
+                        </div>
+                        <p class="text-[11px] text-slate-400">5 minutos de alinhamento diário removem impedimentos antes de virarem grandes atrasos.</p>
+                    </div>
+                </div>
+
+                <!-- Print & Restart Actions -->
+                <div class="flex flex-wrap justify-center gap-3 pt-2 no-print">
+                    <button onclick="window.print()" class="px-6 py-2.5 bg-slate-800 hover:bg-slate-700 text-white font-display font-bold text-xs rounded-xl border border-slate-700 transition flex items-center space-x-2">
+                        <i class="fa-solid fa-print"></i>
+                        <span>Imprimir / Salvar PDF</span>
+                    </button>
+                    <button onclick="restartApp()" class="px-6 py-2.5 bg-sky-600/20 hover:bg-sky-600/30 text-sky-300 font-display font-bold text-xs rounded-xl border border-sky-500/30 transition flex items-center space-x-2">
+                        <i class="fa-solid fa-rotate-left"></i>
+                        <span>Reiniciar Atividade</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- TEACHER DEBATE GUIDE -->
+            <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 md:p-8 space-y-6 shadow-xl no-print">
+                <div class="flex items-center space-x-3 border-b border-slate-800 pb-4">
+                    <div class="w-10 h-10 rounded-2xl bg-purple-500/20 text-purple-400 flex items-center justify-center font-bold text-xl">
+                        <i class="fa-solid fa-chalkboard-user"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-display text-xl font-bold text-white">Roteiro de Debate para o Professor (10 Minutos)</h3>
+                        <p class="text-xs text-slate-400">Projete estas perguntas simples na tela para fechar a aula com chave de ouro!</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="bg-slate-950 p-4 rounded-2xl border border-slate-800 space-y-2">
+                        <span class="text-xs font-extrabold text-sky-400 uppercase tracking-wider block">Debate 1</span>
+                        <h4 class="font-bold text-white text-sm">Por que é melhor entregar 2 pedidos prontos do que começar 10 e não terminar nenhum?</h4>
+                        <p class="text-xs text-slate-400 leading-relaxed">
+                            <em>Dica de resposta:</em> Porque o cliente só consome/paga pelo que foi entregue. Trabalho parado no meio do caminho é custo sem faturamento.
+                        </p>
+                    </div>
+
+                    <div class="bg-slate-950 p-4 rounded-2xl border border-slate-800 space-y-2">
+                        <span class="text-xs font-extrabold text-emerald-400 uppercase tracking-wider block">Debate 2</span>
+                        <h4 class="font-bold text-white text-sm">Qual a diferença entre a fila do banco comum e a priorização de cargas na logística?</h4>
+                        <p class="text-xs text-slate-400 leading-relaxed">
+                            <em>Dica de resposta:</em> Fila do banco é por ordem de chegada. Na logística, vacinas e perecíveis passam na frente porque têm prazo de validade e urgência vital.
+                        </p>
+                    </div>
+
+                    <div class="bg-slate-950 p-4 rounded-2xl border border-slate-800 space-y-2">
+                        <span class="text-xs font-extrabold text-amber-400 uppercase tracking-wider block">Debate 3</span>
+                        <h4 class="font-bold text-white text-sm">O que acontece quando o operador guarda um problema em segredo em vez de falar na Reunião Diária?</h4>
+                        <p class="text-xs text-slate-400 leading-relaxed">
+                            <em>Dica de resposta:</em> O problema cresce, vira bola de neve e o cliente recebe com atraso. A Daily cria um ambiente seguro para pedir ajuda.
+                        </p>
+                    </div>
+
+                    <div class="bg-slate-950 p-4 rounded-2xl border border-slate-800 space-y-2">
+                        <span class="text-xs font-extrabold text-purple-400 uppercase tracking-wider block">Debate 4</span>
+                        <h4 class="font-bold text-white text-sm">Como o quadro Kanban visual ajuda quem trabalha no chão de fábrica?</h4>
+                        <p class="text-xs text-slate-400 leading-relaxed">
+                            <em>Dica de resposta:</em> Qualquer pessoa enxerga o estado do galpão em 3 segundos, sem precisar ler relatórios gigantes.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+        </section>
+
+    </main>
+
+    <!-- CUSTOM MODAL: WIP BLOCKED ALERT -->
+    <div id="wip-modal" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-slate-900 border-2 border-rose-500/80 rounded-3xl p-6 max-w-md w-full space-y-4 shadow-2xl text-center transform scale-100 transition-all">
+            <div class="w-16 h-16 bg-rose-500/20 text-rose-400 rounded-full flex items-center justify-center text-3xl mx-auto border border-rose-500/40">
+                <i class="fa-solid fa-hand-paper animate-bounce"></i>
+            </div>
+            <h3 class="font-display text-2xl font-bold text-white">🛑 OPS! GALPÃO ENTULHADO!</h3>
+            <p class="text-sm text-slate-300 leading-relaxed">
+                Você tentou puxar mais de 2 caixas para "Em Separação"! Se enchermos a bancada sem entregar as anteriores, ocorrem erros e atrasos.
+            </p>
+            <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 text-xs text-amber-300 font-medium">
+                💡 <strong>Lição Ágil:</strong> Mova as caixas em separação para "Entregue" para liberar espaço!
+            </div>
+            <button onclick="closeWipModal()" class="w-full py-3 bg-rose-600 hover:bg-rose-500 text-white font-display font-bold text-sm rounded-xl shadow-lg transition">
+                Entendi! Vou liberar a bancada
+            </button>
+        </div>
+    </div>
+
+    <!-- CUSTOM MODAL: UNBLOCK DAILY QUIZ -->
+    <div id="unblock-modal" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 max-w-lg w-full space-y-5 shadow-2xl">
+            <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+                <span id="unblock-modal-badge" class="px-3 py-1 bg-amber-500/20 text-amber-300 border border-amber-500/30 rounded-full text-xs font-bold uppercase">
+                    <i class="fa-solid fa-comments mr-1"></i> Reunião Diária (Daily)
+                </span>
+                <button onclick="closeUnblockModal()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+
+            <div class="space-y-2">
+                <h3 id="unblock-modal-title" class="font-display text-xl font-bold text-white"></h3>
+                <p id="unblock-modal-desc" class="text-xs text-slate-300 leading-relaxed"></p>
+            </div>
+
+            <div class="space-y-3">
+                <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block">Qual a melhor solução ágil para destravar agora?</span>
+                <div id="unblock-options" class="space-y-2.5"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-slate-950 border-t border-slate-800/80 py-4 text-center text-xs text-slate-500 no-print">
+        <div class="max-w-5xl mx-auto px-4 flex flex-wrap justify-between items-center gap-2">
+            <span>© Desafio Galpão Ágil v2.0 • Aprendizado Prático em Logística</span>
+            <span>Fases 1 & 2 • Desenvolvido para Sala de Aula</span>
+        </div>
+    </footer>
+
+    <script>
+        // WEB AUDIO API SOUND GENERATOR
+        const AudioFX = {
+            ctx: null,
+            init() {
+                if (!this.ctx) {
+                    this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+                }
+            },
+            playClick() {
+                this.init();
+                if (!this.ctx) return;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(600, this.ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(800, this.ctx.currentTime + 0.05);
+                gain.gain.setValueAtTime(0.1, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.05);
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start();
+                osc.stop(this.ctx.currentTime + 0.05);
+            },
+            playError() {
+                this.init();
+                if (!this.ctx) return;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(220, this.ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(120, this.ctx.currentTime + 0.2);
+                gain.gain.setValueAtTime(0.2, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.2);
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start();
+                osc.stop(this.ctx.currentTime + 0.2);
+            },
+            playSuccess() {
+                this.init();
+                if (!this.ctx) return;
+                const now = this.ctx.currentTime;
+                [523.25, 659.25, 783.99].forEach((freq, idx) => {
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(freq, now + idx * 0.08);
+                    gain.gain.setValueAtTime(0.15, now + idx * 0.08);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + idx * 0.08 + 0.15);
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+                    osc.start(now + idx * 0.08);
+                    osc.stop(now + idx * 0.08 + 0.15);
+                });
+            }
+        };
+
+        // APPLICATION STATE
+        const state = {
+            studentName: '',
+            currentStep: 0,
+            storyIndex: 0,
+            kanbanOrders: [
+                { id: '101', client: 'Mercado Silva', item: '3 Caixas de Suco', status: 'todo' },
+                { id: '102', client: 'Padaria Central', item: '2 Sacos de Farinha', status: 'todo' },
+                { id: '103', client: 'Farmácia Vida', item: '1 Caixa Remédios', status: 'todo' },
+                { id: '104', client: 'Escola Futuro', item: '4 Pacotes Papel', status: 'todo' },
+                { id: '105', client: 'Loja Esporte', item: '2 Pares Tênis', status: 'todo' },
+                { id: '106', client: 'Restaurante Sol', item: '1 Caixa Copos', status: 'todo' }
+            ],
+            wipLimit: 2,
+            
+            // Phase 2 Data
+            cargos: [
+                { id: 'c1', name: '🧪 Vacinas Refrigeradas', urgent: true, desc: 'Urgência Médica / Temperatura Controlada', batch: null },
+                { id: 'c2', name: '🍞 Pães Frescos da Padaria', urgent: true, desc: 'Validade do Produto Curta (Hoje)', batch: null },
+                { id: 'c3', name: '👕 Camisetas de Algodão', urgent: false, desc: 'Prazo do Cliente: 5 dias', batch: null },
+                { id: 'c4', name: '📎 Caixas de Clipes de Papel', urgent: false, desc: 'Estoque de Escritório Sem Urgência', batch: null }
+            ],
+
+            blockedOrders: [
+                {
+                    id: 'b1',
+                    client: 'Hospital São João',
+                    item: '20 Frascos de Soro',
+                    reason: '🚨 Faltou fita adesiva para lacrar a caixa de papelão no posto de embalagem.',
+                    options: [
+                        { text: '❌ Esperar a compra oficial do almoxarifado chegar na semana que vem.', isCorrect: false, feedback: 'Errado! O hospital precisa do soro hoje. Esperar uma semana é inviável.' },
+                        { text: '✅ Pedir um rolo de fita emprestado do setor ao lado para despachar em 2 minutos.', isCorrect: true, feedback: 'Excelente! A Reunião Diária serve para resolver pequenos bloqueios na hora com colaboração!' }
+                    ],
+                    resolved: false
+                },
+                {
+                    id: 'b2',
+                    client: 'Distribuidora Express',
+                    item: '5 Caixas de Óleo',
+                    reason: '🚨 A etiqueta da caixa está rasgada e falta o número da casa do cliente.',
+                    options: [
+                        { text: '✅ Ligar/mandar mensagem rápida ao suporte ao cliente para confirmar o número e refazer a etiqueta.', isCorrect: true, feedback: 'Perfeito! Comunicação direta resolve o dado faltante sem travar a carga.' },
+                        { text: '❌ Deixar a caixa num canto do galpão e fingir que não viu.', isCorrect: false, feedback: 'Incorreto. Deixar a caixa esquecida gera extravio e reclamações do cliente.' }
+                    ],
+                    resolved: false
+                },
+                {
+                    id: 'b3',
+                    client: 'Supermercado Verde',
+                    item: '10 Fardos de Refrigerante',
+                    reason: '🚨 A empilhadeira principal descarregou a bateria no meio do corredor.',
+                    options: [
+                        { text: '❌ Deixar os fardos bloqueando o corredor o dia inteiro.', isCorrect: false, feedback: 'Incorreto. Corredor bloqueado reduz a segurança e trava todo o restante da fábrica.' },
+                        { text: '✅ Avisar o time na Daily e usar a transpaleteira manual para liberar a passagem na hora.', isCorrect: true, feedback: 'Muito bem! Agilidade é buscar alternativas simples para manter o fluxo funcionando!' }
+                    ],
+                    resolved: false
+                }
+            ]
+        };
+
+        const stories = [
+            {
+                category: "📍 Mudança no Meio do Caminho",
+                title: "1. O Cliente Mudou o Endereço de Entrega!",
+                text: "O caminhão já estava pronto para sair do galpão quando o cliente ligou avisando que precisou mudar o local de entrega para a filial da mesma cidade.",
+                options: [
+                    {
+                        text: "❌ Recusar a mudança e mandar entregar no endereço antigo de qualquer jeito, porque o plano já estava impresso no papel.",
+                        isAgile: false,
+                        badge: "Modo Tradicional Rígido",
+                        feedback: "Ops! Entregar no lugar errado só porque estava no plano gera devolução e deixa o cliente desapontado."
+                    },
+                    {
+                        text: "✅ Conversar com o motorista, ajustar a etiqueta da caixa e avisar a equipe da nova rota com rapidez.",
+                        isAgile: true,
+                        badge: "Modo Ágil!",
+                        feedback: "Excelente! O pensamento ágil prioriza resolver a necessidade real do cliente com flexibilidade!"
+                    }
+                ]
+            },
+            {
+                category: "📦 Imprevisto com Materiais",
+                title: "2. Faltou Caixa de Papelão para Embalar!",
+                text: "Na metade do turno, acabou o lote de caixas padrão de papelão. Chegou uma fila de novos pedidos aguardando embalagem.",
+                options: [
+                    {
+                        text: "❌ Mandar os operadores pararem de trabalhar e ficarem de braços cruzados esperando o gerente chegar amanhã.",
+                        isAgile: false,
+                        badge: "Modo Tradicional Passivo",
+                        feedback: "Incorreto. Ficar parado esperando sem buscar soluções atrasa todas as entregas do dia sem necessidade."
+                    },
+                    {
+                        text: "✅ Fazer uma conversa de 2 minutos com o time e usar caixas seguras alternativas já disponíveis no estoque.",
+                        isAgile: true,
+                        badge: "Modo Ágil!",
+                        feedback: "Perfeito! A equipe ágil se comunica rápido para encontrar alternativas sem travar a operação!"
+                    }
+                ]
+            },
+            {
+                category: "🗣️ Comunicação no Galpão",
+                title: "3. Pedidos Chegando com Caixas Invertidas!",
+                text: "Na última semana, a equipe percebeu que alguns produtos estavam sendo trocados durante a separação antes do envio.",
+                options: [
+                    {
+                        text: "❌ Esperar o fim do mês para fazer uma reunião longa de 2 horas dando bronca generalizada em todo mundo.",
+                        isAgile: false,
+                        badge: "Modo Tradicional Punitivo",
+                        feedback: "Ruim. Esperar 30 dias para corrigir um erro faz com que centenas de clientes recebam produtos errados."
+                    },
+                    {
+                        text: "✅ Fazer uma reunião diária de 5 minutos em pé (Daily) todo dia de manhã para alinhar detalhes e tirar dúvidas.",
+                        isAgile: true,
+                        badge: "Modo Ágil (Daily Meeting)!",
+                        feedback: "Maravilhoso! As Reuniões Diárias (Dailies) curtas alinham a equipe todos os dias e evitam erros antes que aconteçam!"
+                    }
+                ]
+            }
+        ];
+
+        function startApp() {
+            AudioFX.playClick();
+            const nameInput = document.getElementById('student-name-input').value.trim();
+            const errorEl = document.getElementById('name-error');
+
+            if (!nameInput) {
+                errorEl.classList.remove('hidden');
+                AudioFX.playError();
+                return;
+            }
+
+            errorEl.classList.add('hidden');
+            state.studentName = nameInput;
+
+            document.getElementById('badge-name').innerText = nameInput;
+            document.getElementById('student-badge').classList.remove('hidden');
+            document.getElementById('cert-student-name').innerText = nameInput;
+            document.getElementById('cert-date').innerText = "Data: " + new Date().toLocaleDateString('pt-BR');
+
+            showStep(1);
+            loadStory(0);
+        }
+
+        function showStep(stepNumber) {
+            state.currentStep = stepNumber;
+
+            document.getElementById('screen-welcome').classList.add('hidden');
+            document.getElementById('screen-step1').classList.add('hidden');
+            document.getElementById('screen-step2').classList.add('hidden');
+            document.getElementById('screen-step3').classList.add('hidden');
+
+            if (stepNumber === 1) document.getElementById('screen-step1').classList.remove('hidden');
+            if (stepNumber === 2) {
+                document.getElementById('screen-step2').classList.remove('hidden');
+                renderCargoBoxes();
+                renderBlockedOrders();
+            }
+            if (stepNumber === 3) {
+                document.getElementById('screen-step3').classList.remove('hidden');
+                AudioFX.playSuccess();
+            }
+
+            for (let i = 1; i <= 3; i++) {
+                const dot = document.getElementById(`step-dot-${i}`);
+                if (i <= stepNumber) {
+                    dot.className = "w-7 h-7 rounded-full bg-sky-500 text-white flex items-center justify-center shadow-md font-bold";
+                } else {
+                    dot.className = "w-7 h-7 rounded-full bg-slate-800 text-slate-500 flex items-center justify-center border border-slate-700 font-bold";
+                }
+            }
+        }
+
+        function loadStory(index) {
+            state.storyIndex = index;
+            const current = stories[index];
+
+            document.getElementById('story-progress').innerText = `${index + 1} de ${stories.length}`;
+            document.getElementById('story-category').innerHTML = current.category;
+            document.getElementById('story-title').innerText = current.title;
+            document.getElementById('story-text').innerText = current.text;
+
+            document.getElementById('story-feedback').classList.add('hidden');
+
+            const optionsContainer = document.getElementById('story-options');
+            optionsContainer.innerHTML = '';
+
+            current.options.forEach((opt, optIdx) => {
+                const btn = document.createElement('button');
+                btn.className = "w-full text-left p-4 rounded-2xl bg-slate-950 hover:bg-slate-800 border border-slate-800 hover:border-sky-500/50 transition duration-200 flex flex-col justify-between space-y-2 group cursor-pointer";
+                btn.onclick = () => selectStoryOption(optIdx);
+                btn.innerHTML = `
+                    <span class="text-xs font-bold text-slate-400 group-hover:text-sky-300">Opção ${optIdx === 0 ? 'A' : 'B'}</span>
+                    <span class="text-sm text-slate-200 group-hover:text-white font-medium">${opt.text}</span>
+                `;
+                optionsContainer.appendChild(btn);
+            });
+        }
+
+        function selectStoryOption(optIndex) {
+            AudioFX.playClick();
+            const current = stories[state.storyIndex];
+            const opt = current.options[optIndex];
+
+            const feedbackBox = document.getElementById('story-feedback');
+            const badge = document.getElementById('feedback-badge');
+            const feedbackText = document.getElementById('feedback-text');
+
+            feedbackBox.classList.remove('hidden');
+
+            if (opt.isAgile) {
+                AudioFX.playSuccess();
+                feedbackBox.className = "p-5 rounded-2xl border border-emerald-500/50 bg-emerald-950/30 space-y-3";
+                badge.className = "px-3 py-1 rounded-full text-xs font-bold uppercase bg-emerald-500/20 text-emerald-300 border border-emerald-500/30";
+            } else {
+                AudioFX.playError();
+                feedbackBox.className = "p-5 rounded-2xl border border-rose-500/50 bg-rose-950/30 space-y-3";
+                badge.className = "px-3 py-1 rounded-full text-xs font-bold uppercase bg-rose-500/20 text-rose-300 border border-rose-500/30";
+            }
+
+            badge.innerText = opt.badge;
+            feedbackText.innerText = opt.feedback;
+
+            document.querySelectorAll('#story-options button').forEach(b => b.disabled = true);
+        }
+
+        function nextStory() {
+            AudioFX.playClick();
+            if (state.storyIndex + 1 < stories.length) {
+                loadStory(state.storyIndex + 1);
+            } else {
+                // Transition to Part 2 (Kanban)
+                document.getElementById('phase1-part1').classList.add('hidden');
+                document.getElementById('phase1-part2').classList.remove('hidden');
+                renderKanban();
+            }
+        }
+
+        function renderKanban() {
+            const colTodo = document.getElementById('col-todo');
+            const colDoing = document.getElementById('col-doing');
+            const colDone = document.getElementById('col-done');
+
+            colTodo.innerHTML = '';
+            colDoing.innerHTML = '';
+            colDone.innerHTML = '';
+
+            let countTodo = 0;
+            let countDoing = 0;
+            let countDone = 0;
+
+            state.kanbanOrders.forEach(order => {
+                const card = createOrderCard(order);
+
+                if (order.status === 'todo') {
+                    colTodo.appendChild(card);
+                    countTodo++;
+                } else if (order.status === 'doing') {
+                    colDoing.appendChild(card);
+                    countDoing++;
+                } else if (order.status === 'done') {
+                    colDone.appendChild(card);
+                    countDone++;
+                }
+            });
+
+            document.getElementById('count-todo').innerText = countTodo;
+            document.getElementById('wip-current-count').innerText = countDoing;
+            document.getElementById('count-done').innerText = countDone;
+            document.getElementById('delivered-count').innerText = `${countDone} / ${state.kanbanOrders.length}`;
+
+            if (countDone === state.kanbanOrders.length) {
+                AudioFX.playSuccess();
+                setTimeout(() => {
+                    showStep(2); // Auto advance to Phase 2
+                }, 800);
+            }
+        }
+
+        function createOrderCard(order) {
+            const card = document.createElement('div');
+            card.id = `card-${order.id}`;
+            card.draggable = true;
+            card.ondragstart = (e) => drag(e, order.id);
+
+            let actionBtnHTML = '';
+            if (order.status === 'todo') {
+                actionBtnHTML = `
+                    <button onclick="moveOrder('${order.id}', 'doing')" class="w-full py-1.5 bg-slate-800 hover:bg-sky-600 text-slate-300 hover:text-white text-xs font-bold rounded-lg transition flex items-center justify-center space-x-1 mt-2">
+                        <span>Puxar para Separação</span>
+                        <i class="fa-solid fa-arrow-right text-[10px]"></i>
+                    </button>
+                `;
+            } else if (order.status === 'doing') {
+                actionBtnHTML = `
+                    <button onclick="moveOrder('${order.id}', 'done')" class="w-full py-1.5 bg-emerald-600/80 hover:bg-emerald-500 text-white text-xs font-bold rounded-lg transition flex items-center justify-center space-x-1 mt-2">
+                        <span>Concluir Entrega</span>
+                        <i class="fa-solid fa-check text-[10px]"></i>
+                    </button>
+                `;
+            } else {
+                actionBtnHTML = `
+                    <span class="block text-[11px] text-emerald-400 font-bold text-center mt-2">
+                        <i class="fa-solid fa-circle-check"></i> Entregue com Sucesso
+                    </span>
+                `;
+            }
+
+            card.className = "kanban-card p-3 rounded-2xl bg-slate-950 border border-slate-800 space-y-1 shadow-md";
+            card.innerHTML = `
+                <div class="flex items-center justify-between">
+                    <span class="font-display font-bold text-xs text-amber-400">#${order.id}</span>
+                    <span class="text-[10px] bg-slate-800 text-slate-400 px-2 py-0.5 rounded-full">${order.client}</span>
+                </div>
+                <div class="text-xs text-white font-medium">${order.item}</div>
+                ${actionBtnHTML}
+            `;
+
+            return card;
+        }
+
+        function moveOrder(orderId, targetStatus) {
+            AudioFX.playClick();
+            const order = state.kanbanOrders.find(o => o.id === orderId);
+            if (!order) return;
+
+            // WIP Enforcement
+            if (targetStatus === 'doing') {
+                const currentDoingCount = state.kanbanOrders.filter(o => o.status === 'doing').length;
+                if (currentDoingCount >= state.wipLimit) {
+                    showWipModal();
+                    return;
+                }
+            }
+
+            order.status = targetStatus;
+            renderKanban();
+        }
+
+        function showWipModal() {
+            AudioFX.playError();
+            document.getElementById('wip-modal').classList.remove('hidden');
+        }
+
+        function closeWipModal() {
+            AudioFX.playClick();
+            document.getElementById('wip-modal').classList.add('hidden');
+        }
+
+        function renderCargoBoxes() {
+            const unassignedCol = document.getElementById('unassigned-cargo');
+            const batch1Slot = document.getElementById('batch-1-slot');
+            const batch2Slot = document.getElementById('batch-2-slot');
+
+            unassignedCol.innerHTML = '';
+            batch1Slot.innerHTML = '';
+            batch2Slot.innerHTML = '';
+
+            let b1Count = 0;
+            let b2Count = 0;
+
+            state.cargos.forEach(c => {
+                const box = document.createElement('div');
+                box.className = "p-3 rounded-xl bg-slate-950 border border-slate-800 space-y-1.5 shadow-sm";
+                box.draggable = true;
+                box.ondragstart = (e) => e.dataTransfer.setData('text/plain', c.id);
+
+                let batchButtons = '';
+                if (!c.batch) {
+                    batchButtons = `
+                        <div class="flex gap-1.5 pt-1">
+                            <button onclick="assignCargo('${c.id}', 'batch1')" class="flex-1 py-1 bg-purple-600/30 hover:bg-purple-600 text-purple-300 hover:text-white text-[10px] font-bold rounded-lg border border-purple-500/30">
+                                + Lote 1
+                            </button>
+                            <button onclick="assignCargo('${c.id}', 'batch2')" class="flex-1 py-1 bg-sky-600/30 hover:bg-sky-600 text-sky-300 hover:text-white text-[10px] font-bold rounded-lg border border-sky-500/30">
+                                + Lote 2
+                            </button>
+                        </div>
+                    `;
+                } else {
+                    batchButtons = `
+                        <button onclick="assignCargo('${c.id}', null)" class="w-full py-1 bg-slate-800 hover:bg-slate-700 text-slate-400 text-[10px] font-bold rounded-lg">
+                            Remover
+                        </button>
+                    `;
+                }
+
+                box.innerHTML = `
+                    <div class="font-bold text-xs text-white">${c.name}</div>
+                    <p class="text-[10px] text-slate-400">${c.desc}</p>
+                    ${batchButtons}
+                `;
+
+                if (!c.batch) {
+                    unassignedCol.appendChild(box);
+                } else if (c.batch === 'batch1') {
+                    batch1Slot.appendChild(box);
+                    b1Count++;
+                } else if (c.batch === 'batch2') {
+                    batch2Slot.appendChild(box);
+                    b2Count++;
+                }
+            });
+
+            document.getElementById('batch1-count').innerText = `${b1Count} / 2`;
+            document.getElementById('batch2-count').innerText = `${b2Count} / 2`;
+        }
+
+        function assignCargo(cargoId, targetBatch) {
+            AudioFX.playClick();
+            const cargo = state.cargos.find(c => c.id === cargoId);
+            if (!cargo) return;
+
+            if (targetBatch) {
+                const countInTarget = state.cargos.filter(c => c.batch === targetBatch).length;
+                if (countInTarget >= 2) {
+                    AudioFX.playError();
+                    return;
+                }
+            }
+
+            cargo.batch = targetBatch;
+            renderCargoBoxes();
+        }
+
+        function dropCargo(ev, targetBatch) {
+            ev.preventDefault();
+            const cargoId = ev.dataTransfer.getData("text/plain");
+            if (cargoId) assignCargo(cargoId, targetBatch);
+        }
+
+        function validateBatchPrioritization() {
+            AudioFX.playClick();
+            const feedbackBox = document.getElementById('batch-feedback');
+            feedbackBox.classList.remove('hidden');
+
+            const batch1Items = state.cargos.filter(c => c.batch === 'batch1');
+            const unassigned = state.cargos.filter(c => !c.batch);
+
+            if (unassigned.length > 0) {
+                AudioFX.playError();
+                feedbackBox.className = "p-4 rounded-2xl border border-amber-500/50 bg-amber-950/30 text-amber-300 text-xs font-medium";
+                feedbackBox.innerHTML = "<i class='fa-solid fa-circle-exclamation mr-1'></i> Por favor, distribua as 4 cargas entre o Lote 1 e o Lote 2 antes de validar!";
+                return;
+            }
+
+            // Check if both urgent cargos are in batch 1
+            const urgentInBatch1 = batch1Items.filter(c => c.urgent).length;
+
+            if (urgentInBatch1 === 2 && batch1Items.length === 2) {
+                AudioFX.playSuccess();
+                feedbackBox.className = "p-4 rounded-2xl border border-emerald-500/50 bg-emerald-950/30 text-emerald-300 text-xs font-medium space-y-2";
+                feedbackBox.innerHTML = `
+                    <div class="font-bold text-sm"><i class="fa-solid fa-circle-check mr-1"></i> EXCELENTE PRIORIZAÇÃO!</div>
+                    <p>Você colocou as <strong>Vacinas</strong> e os <strong>Pães Frescos</strong> no Lote 1! Elas são cargas perecíveis/urgentes e saíram no primeiro caminhão.</p>
+                    <button onclick="advanceToDailySection()" class="mt-2 px-6 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl text-xs">
+                        Ir para a Parte 2: Reunião Diária (Daily) <i class="fa-solid fa-arrow-right ml-1"></i>
+                    </button>
+                `;
+            } else {
+                AudioFX.playError();
+                feedbackBox.className = "p-4 rounded-2xl border border-rose-500/50 bg-rose-950/30 text-rose-300 text-xs font-medium";
+                feedbackBox.innerHTML = "<i class='fa-solid fa-circle-xmark mr-1'></i> Opa! Cargas como Vacinas e Alimentos Frescos não podem esperar o Lote 2. Reorganize e coloque as 2 cargas urgentes no Lote 1!";
+            }
+        }
+
+        function advanceToDailySection() {
+            AudioFX.playClick();
+            document.getElementById('phase2-part1').classList.add('hidden');
+            document.getElementById('phase2-part2').classList.remove('hidden');
+        }
+
+        function renderBlockedOrders() {
+            const list = document.getElementById('blocked-items-list');
+            list.innerHTML = '';
+
+            let resolvedCount = 0;
+
+            state.blockedOrders.forEach(bo => {
+                const card = document.createElement('div');
+                card.className = `p-4 rounded-2xl border transition-all ${bo.resolved ? 'bg-slate-950/60 border-emerald-500/40 opacity-80' : 'bg-slate-950 border-amber-500/50 pulse-amber-border'}`;
+
+                let btnHTML = '';
+                if (bo.resolved) {
+                    resolvedCount++;
+                    btnHTML = `<span class="text-xs font-bold text-emerald-400 block pt-2"><i class="fa-solid fa-check-circle mr-1"></i> Destravado & Entregue</span>`;
+                } else {
+                    btnHTML = `
+                        <button onclick="openUnblockModal('${bo.id}')" class="w-full mt-3 py-2 bg-amber-500 hover:bg-amber-400 text-slate-950 font-display font-bold text-xs rounded-xl shadow-md transition">
+                            <i class="fa-solid fa-comments mr-1"></i> Destravar na Reunião Diária
+                        </button>
+                    `;
+                }
+
+                card.innerHTML = `
+                    <div class="flex items-center justify-between mb-1">
+                        <span class="font-display font-bold text-xs text-amber-400">#${bo.id}</span>
+                        <span class="text-[10px] bg-slate-800 text-slate-300 px-2 py-0.5 rounded-full">${bo.client}</span>
+                    </div>
+                    <h4 class="text-xs font-bold text-white mb-2">${bo.item}</h4>
+                    <p class="text-[11px] text-slate-300 leading-relaxed bg-slate-900 p-2.5 rounded-xl border border-slate-800">${bo.reason}</p>
+                    ${btnHTML}
+                `;
+
+                list.appendChild(card);
+            });
+
+            if (resolvedCount === state.blockedOrders.length) {
+                document.getElementById('phase2-finish-box').classList.remove('hidden');
+            }
+        }
+
+        function openUnblockModal(blockedId) {
+            AudioFX.playClick();
+            const bo = state.blockedOrders.find(b => b.id === blockedId);
+            if (!bo) return;
+
+            document.getElementById('unblock-modal-title').innerText = bo.item + " (" + bo.client + ")";
+            document.getElementById('unblock-modal-desc').innerText = bo.reason;
+
+            const optsContainer = document.getElementById('unblock-options');
+            optsContainer.innerHTML = '';
+
+            bo.options.forEach((opt, idx) => {
+                const btn = document.createElement('button');
+                btn.className = "w-full text-left p-3.5 rounded-xl bg-slate-950 hover:bg-slate-800 border border-slate-800 text-xs text-slate-200 transition space-y-1";
+                btn.onclick = () => solveBlock(bo.id, opt);
+                btn.innerHTML = `<span class="font-medium">${opt.text}</span>`;
+                optsContainer.appendChild(btn);
+            });
+
+            document.getElementById('unblock-modal').classList.remove('hidden');
+        }
+
+        function solveBlock(blockedId, option) {
+            const bo = state.blockedOrders.find(b => b.id === blockedId);
+            if (!bo) return;
+
+            if (option.isCorrect) {
+                AudioFX.playSuccess();
+                bo.resolved = true;
+                closeUnblockModal();
+                renderBlockedOrders();
+            } else {
+                AudioFX.playError();
+                const modalDesc = document.getElementById('unblock-modal-desc');
+                modalDesc.innerHTML = `<span class="text-rose-400 font-bold">${option.feedback}</span>`;
+            }
+        }
+
+        function closeUnblockModal() {
+            AudioFX.playClick();
+            document.getElementById('unblock-modal').classList.add('hidden');
+        }
+
+        function goToStep3() {
+            AudioFX.playClick();
+            showStep(3);
+        }
+
+        function restartApp() {
+            AudioFX.playClick();
+            state.storyIndex = 0;
+            state.kanbanOrders.forEach(o => o.status = 'todo');
+            state.cargos.forEach(c => c.batch = null);
+            state.blockedOrders.forEach(b => b.resolved = false);
+            
+            document.getElementById('phase1-part1').classList.remove('hidden');
+            document.getElementById('phase1-part2').classList.add('hidden');
+            document.getElementById('phase2-part1').classList.remove('hidden');
+            document.getElementById('phase2-part2').classList.add('hidden');
+            document.getElementById('phase2-finish-box').classList.add('hidden');
+
+            showStep(0);
+        }
+    </script>
+</body>
+</html>
